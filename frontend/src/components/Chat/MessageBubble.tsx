@@ -64,7 +64,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           {!isUser && message.metadata && (
             <div className="mt-4 pt-4 border-t border-slate-200">
               {/* Tools Used */}
-              {message.metadata.tool_count > 0 && (
+              {(message.metadata.tool_count ?? 0) > 0 && (
                 <div className="mb-3">
                   <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
                     <Brain className="w-3.5 h-3.5" />
@@ -99,7 +99,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
               )}
 
               {/* Conflicts */}
-              {message.metadata.conflict_count > 0 && (
+              {(message.metadata.conflict_count ?? 0) > 0 && (
                 <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
                   <AlertTriangle className="w-4 h-4 text-amber-600" />
                   <span className="text-xs text-amber-800 font-medium">
