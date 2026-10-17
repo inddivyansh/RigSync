@@ -3,6 +3,25 @@ FastAPI backend for RigSync - Asset Intelligence Copilot.
 Provides REST API for chat, sessions, and well data access.
 """
 
+import sys
+from pathlib import Path
+
+# Fix Windows console UTF-8 output encoding for emojis
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
+# Resolve paths whether run from RigSync/ or RigSync/backend/
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+DB_PATH = str(DATA_DIR / "db" / "oilwells.db")
+CHROMA_PATH = str(DATA_DIR / "chroma")
+GRAPH_PATH = str(DATA_DIR / "graph" / "knowledge_graph.json")
+MEMORY_DIR = str(DATA_DIR / "memory")
+
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -87,16 +106,16 @@ async def startup_event():
     global agent, session_manager, correction_tracker
     
     agent = RigSyncAgent(
-        db_path="backend/data/db/oilwells.db",
-        chroma_path="backend/data/chroma",
-        graph_path="backend/data/graph/knowledge_graph.json",
-        memory_dir="backend/data/memory"
+        db_path=DB_PATH,
+        chroma_path=CHROMA_PATH,
+        graph_path=GRAPH_PATH,
+        memory_dir=MEMORY_DIR
     )
     
-    session_manager = SessionManager("backend/data/memory")
-    correction_tracker = CorrectionTracker("backend/data/db/oilwells.db")
+    session_manager = SessionManager(MEMORY_DIR)
+    correction_tracker = CorrectionTracker(DB_PATH)
     
-    print("✅ RigSync agent initialized")
+    print("[OK] RigSync agent initialized successfully")
 
 
 @app.get("/")
@@ -373,7 +392,7 @@ async def get_well_downtime(well_id: str):
     from tools.downtime_calc import calculate_downtime
     
     try:
-        result = calculate_downtime(well_id, "backend/data/db/oilwells.db")
+        result = calculate_downtime(well_id, DB_PATH)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Downtime calculation failed: {str(e)}")
@@ -385,7 +404,7 @@ async def get_well_compliance(well_id: str):
     from tools.compliance_check import check_compliance
     
     try:
-        result = check_compliance(well_id, "backend/data/db/oilwells.db")
+        result = check_compliance(well_id, DB_PATH)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Compliance check failed: {str(e)}")
@@ -396,7 +415,7 @@ async def list_areas():
     """List all operational areas."""
     import sqlite3
     
-    conn = sqlite3.connect("backend/data/db/oilwells.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
@@ -412,7 +431,7 @@ async def list_teams():
     """List all operational teams."""
     import sqlite3
     
-    conn = sqlite3.connect("backend/data/db/oilwells.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
@@ -428,11 +447,11 @@ async def list_users():
     """List all users."""
     import sqlite3
     
-    conn = sqlite3.connect("backend/data/db/oilwells.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
-    cursor.execute("SELECT user_id, name, role, team FROM users")
+    cursor.execute("SELECT user_id, name, role, team_id AS team FROM users")
     users = [dict(row) for row in cursor.fetchall()]
     conn.close()
     

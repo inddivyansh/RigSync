@@ -139,3 +139,21 @@ class SQLQueryTool:
 
 # Tool instance
 sql_query_tool = SQLQueryTool()
+
+
+def execute_sql_query(query: str, db_path: str = None) -> Dict[str, Any]:
+    """Execute SQL query helper function for agent."""
+    target_db = Path(db_path) if db_path else DB_PATH
+    try:
+        sql_query_tool._validate_query(query)
+        conn = sqlite3.connect(target_db)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description] if cursor.description else []
+        row_data = [[row[col] for col in columns] for row in rows]
+        conn.close()
+        return {'columns': columns, 'rows': row_data, 'row_count': len(row_data)}
+    except Exception as e:
+        return {'error': str(e), 'columns': [], 'rows': [], 'row_count': 0}

@@ -16,11 +16,13 @@ class ComplianceCheckTool:
     
     def __init__(self):
         """Load rules from JSON"""
-        with open(RULES_PATH, 'r') as f:
-            self.rules = json.load(f)
-        
-        # Index rules by protocol ID
-        self.rules_by_id = {r['protocol_id']: r for r in self.rules}
+        if RULES_PATH.exists():
+            with open(RULES_PATH, 'r') as f:
+                self.rules = json.load(f)
+            self.rules_by_id = {r['protocol_id']: r for r in self.rules}
+        else:
+            self.rules = []
+            self.rules_by_id = {}
     
     def _check_rc01(self, asset_id: str, start_date: str, end_date: str, cursor) -> List[Dict]:
         """RC-01: Inspect every 14 days"""
@@ -256,3 +258,10 @@ class ComplianceCheckTool:
 
 # Tool instance
 compliance_check_tool = ComplianceCheckTool()
+
+
+def check_compliance(well_id: str = None, db_path: str = None, start_date: str = "2026-01-01", end_date: str = "2027-01-15") -> List[Dict[str, Any]]:
+    """Check compliance helper function for agent."""
+    tool = compliance_check_tool
+    target_id = well_id or "WELL-0001"
+    return tool.check_compliance(target_id, start_date, end_date)

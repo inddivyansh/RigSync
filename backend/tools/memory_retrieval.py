@@ -119,3 +119,10 @@ class MemoryRetrievalTool:
 
 # Tool instance
 memory_retrieval_tool = MemoryRetrievalTool()
+
+
+def retrieve_memory(user_id: str = None, well_id: str = None, field_name: str = None, db_path: str = None) -> Dict[str, Any]:
+    """Retrieve memory helper function for agent."""
+    tool = memory_retrieval_tool
+    uid = user_id or "default"
+    return tool.get_context(user_id=uid, asset_id=well_id)

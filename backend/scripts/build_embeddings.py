@@ -10,7 +10,7 @@ from pathlib import Path
 # Paths
 BACKEND_DIR = Path(__file__).parent.parent
 CHROMA_PATH = BACKEND_DIR / "data" / "chroma"
-SAMPLE_DATA = BACKEND_DIR.parent / "sample-data"
+SAMPLE_DATA = BACKEND_DIR.parent / "test-data" / "dataset"
 
 def init_chromadb():
     """Initialize ChromaDB client"""

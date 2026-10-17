@@ -11,7 +11,7 @@ from pathlib import Path
 BACKEND_DIR = Path(__file__).parent.parent
 DB_PATH = BACKEND_DIR / "data" / "db" / "oilwells.db"
 RULES_PATH = BACKEND_DIR / "data" / "rules" / "rules.json"
-SAMPLE_DATA = BACKEND_DIR.parent / "sample-data"
+SAMPLE_DATA = BACKEND_DIR.parent / "test-data" / "dataset"
 
 def parse_spill_response_sop():
     """Extract rules from spill-response-sop.md"""

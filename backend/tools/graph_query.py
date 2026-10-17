@@ -14,14 +14,20 @@ class GraphQueryTool:
     
     def __init__(self):
         """Load graph and indexes"""
-        with open(GRAPH_PATH, 'r') as f:
-            graph_data = json.load(f)
-        
-        self.graph = nx.node_link_graph(graph_data)
-        self.indexes = graph_data.get('indexes', {})
-        self.well_hierarchy = self.indexes.get('well_hierarchy', {})
-        self.area_wells = self.indexes.get('area_wells', {})
-        self.user_wells = self.indexes.get('user_wells', {})
+        if GRAPH_PATH.exists():
+            with open(GRAPH_PATH, 'r') as f:
+                graph_data = json.load(f)
+            self.graph = nx.node_link_graph(graph_data)
+            self.indexes = graph_data.get('indexes', {})
+            self.well_hierarchy = self.indexes.get('well_hierarchy', {})
+            self.area_wells = self.indexes.get('area_wells', {})
+            self.user_wells = self.indexes.get('user_wells', {})
+        else:
+            self.graph = nx.DiGraph()
+            self.indexes = {}
+            self.well_hierarchy = {}
+            self.area_wells = {}
+            self.user_wells = {}
     
     def get_well_hierarchy(self, asset_id: str) -> Dict[str, Any]:
         """Get full hierarchy for a well"""
@@ -139,3 +145,21 @@ class GraphQueryTool:
 
 # Tool instance
 graph_query_tool = GraphQueryTool()
+
+
+def graph_query(query_type: str = "well_details", well_id: str = None, area: str = None, user_id: str = None, graph_path: str = None) -> Any:
+    """Execute graph query helper function for agent."""
+    tool = graph_query_tool
+    if query_type in ("well_details", "get_well_hierarchy") and well_id:
+        return tool.get_well_hierarchy(well_id)
+    elif query_type == "get_area_wells" and area:
+        return tool.get_area_wells(area)
+    elif query_type == "get_user_wells" and user_id:
+        return tool.get_user_wells(user_id)
+    elif well_id:
+        return tool.get_well_hierarchy(well_id)
+    elif area:
+        return tool.get_area_wells(area)
+    elif user_id:
+        return tool.get_user_wells(user_id)
+    return {"error": "Invalid graph query parameters"}

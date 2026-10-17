@@ -196,3 +196,25 @@ class ConflictDetectTool:
 
 # Tool instance
 conflict_detect_tool = ConflictDetectTool()
+
+
+def detect_conflicts(data_or_asset, *args, **kwargs) -> Any:
+    """Detect conflicts helper function supporting both agent and direct tool calls."""
+    tool = conflict_detect_tool
+    if isinstance(data_or_asset, list):
+        conflicts = []
+        for item in data_or_asset:
+            data = item.get("data", {})
+            if isinstance(data, dict):
+                asset_id = data.get("asset_id") or data.get("well_id")
+                if asset_id:
+                    for field in ["wellhead_temp_c", "ambient_temp_c", "status"]:
+                        if field in data:
+                            c = tool.detect_conflicts(asset_id, field, data[field])
+                            if c:
+                                conflicts.extend(c)
+        return {"conflicts": conflicts}
+    else:
+        field = args[0] if len(args) > 0 else kwargs.get("field", "")
+        new_value = args[1] if len(args) > 1 else kwargs.get("new_value")
+        return tool.detect_conflicts(data_or_asset, field, new_value)

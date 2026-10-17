@@ -189,3 +189,9 @@ class DowntimeCalculatorTool:
 
 # Tool instance
 downtime_calc_tool = DowntimeCalculatorTool()
+
+
+def calculate_downtime(well_id: str, db_path: str = None, start_date: str = "2026-01-01", end_date: str = "2027-01-15") -> Dict[str, Any]:
+    """Calculate downtime helper function for agent."""
+    tool = downtime_calc_tool
+    return tool.calculate_downtime(well_id, start_date, end_date)

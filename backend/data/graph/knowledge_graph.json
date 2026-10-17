@@ -1,0 +1,531 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "type": "Area",
+      "name": "Southwest Block 23",
+      "team_id": "TEAM-SW",
+      "lat": 31.842,
+      "lon": -102.512,
+      "id": "SW-23"
+    },
+    {
+      "type": "Area",
+      "name": "Southwest Block 24",
+      "team_id": "TEAM-SW",
+      "lat": 31.801,
+      "lon": -102.468,
+      "id": "SW-24"
+    },
+    {
+      "type": "Area",
+      "name": "Northeast Block 7",
+      "team_id": "TEAM-NE",
+      "lat": 32.115,
+      "lon": -102.201,
+      "id": "NE-07"
+    },
+    {
+      "type": "Area",
+      "name": "Northeast Block 8",
+      "team_id": "TEAM-NE",
+      "lat": 32.152,
+      "lon": -102.164,
+      "id": "NE-08"
+    },
+    {
+      "type": "Area",
+      "name": "Southeast Block 31",
+      "team_id": "TEAM-SE",
+      "lat": 31.705,
+      "lon": -102.318,
+      "id": "SE-31"
+    },
+    {
+      "type": "Area",
+      "name": "Northwest Block 12",
+      "team_id": "TEAM-NW",
+      "lat": 32.214,
+      "lon": -102.618,
+      "id": "NW-12"
+    },
+    {
+      "type": "Area",
+      "name": "Southeast Block 32",
+      "team_id": "TEAM-SE",
+      "lat": 31.662,
+      "lon": -102.274,
+      "id": "SE-32"
+    },
+    {
+      "type": "Team",
+      "name": "Southwest Production",
+      "lead_user_id": "U-101",
+      "id": "TEAM-SW"
+    },
+    {
+      "type": "Team",
+      "name": "Northeast Production",
+      "lead_user_id": "U-201",
+      "id": "TEAM-NE"
+    },
+    {
+      "type": "Team",
+      "name": "Field Maintenance",
+      "lead_user_id": "U-301",
+      "id": "TEAM-MX"
+    },
+    {
+      "type": "Team",
+      "name": "Health, Safety & Environment",
+      "lead_user_id": "U-401",
+      "id": "TEAM-HSE"
+    },
+    {
+      "type": "Team",
+      "name": "Southeast Production",
+      "lead_user_id": "U-501",
+      "id": "TEAM-SE"
+    },
+    {
+      "type": "Team",
+      "name": "Northwest Production",
+      "lead_user_id": "U-601",
+      "id": "TEAM-NW"
+    },
+    {
+      "type": "User",
+      "name": "Emily Carter",
+      "role": "production_supervisor",
+      "team_id": "TEAM-SW",
+      "id": "U-101"
+    },
+    {
+      "type": "User",
+      "name": "Jake Morales",
+      "role": "field_operator",
+      "team_id": "TEAM-SW",
+      "id": "U-102"
+    },
+    {
+      "type": "User",
+      "name": "Sarah Mitchell",
+      "role": "field_inspector",
+      "team_id": "TEAM-SW",
+      "id": "U-103"
+    },
+    {
+      "type": "User",
+      "name": "Ryan Brooks",
+      "role": "field_inspector",
+      "team_id": "TEAM-SW",
+      "id": "U-104"
+    },
+    {
+      "type": "User",
+      "name": "Michael Turner",
+      "role": "production_supervisor",
+      "team_id": "TEAM-NE",
+      "id": "U-201"
+    },
+    {
+      "type": "User",
+      "name": "Jessica Reed",
+      "role": "field_inspector",
+      "team_id": "TEAM-NE",
+      "id": "U-202"
+    },
+    {
+      "type": "User",
+      "name": "Ashley Bennett",
+      "role": "field_inspector",
+      "team_id": "TEAM-NE",
+      "id": "U-203"
+    },
+    {
+      "type": "User",
+      "name": "Tyler Hughes",
+      "role": "field_operator",
+      "team_id": "TEAM-NE",
+      "id": "U-204"
+    },
+    {
+      "type": "User",
+      "name": "Robert Hayes",
+      "role": "maintenance_lead",
+      "team_id": "TEAM-MX",
+      "id": "U-301"
+    },
+    {
+      "type": "User",
+      "name": "Daniel Foster",
+      "role": "maintenance_technician",
+      "team_id": "TEAM-MX",
+      "id": "U-302"
+    },
+    {
+      "type": "User",
+      "name": "Kevin Price",
+      "role": "maintenance_technician",
+      "team_id": "TEAM-MX",
+      "id": "U-303"
+    },
+    {
+      "type": "User",
+      "name": "Brian Coleman",
+      "role": "maintenance_technician",
+      "team_id": "TEAM-MX",
+      "id": "U-304"
+    },
+    {
+      "type": "User",
+      "name": "Megan Ward",
+      "role": "maintenance_technician",
+      "team_id": "TEAM-MX",
+      "id": "U-305"
+    },
+    {
+      "type": "User",
+      "name": "Laura Simmons",
+      "role": "hse_officer",
+      "team_id": "TEAM-HSE",
+      "id": "U-401"
+    },
+    {
+      "type": "User",
+      "name": "Chris Dalton",
+      "role": "hse_officer",
+      "team_id": "TEAM-HSE",
+      "id": "U-402"
+    },
+    {
+      "type": "User",
+      "name": "Olivia Grant",
+      "role": "production_supervisor",
+      "team_id": "TEAM-SE",
+      "id": "U-501"
+    },
+    {
+      "type": "User",
+      "name": "Marcus Lee",
+      "role": "field_inspector",
+      "team_id": "TEAM-SE",
+      "id": "U-502"
+    },
+    {
+      "type": "User",
+      "name": "Hannah Brooks",
+      "role": "field_inspector",
+      "team_id": "TEAM-SE",
+      "id": "U-503"
+    },
+    {
+      "type": "User",
+      "name": "Diego Ramirez",
+      "role": "field_operator",
+      "team_id": "TEAM-SE",
+      "id": "U-504"
+    },
+    {
+      "type": "User",
+      "name": "Kayla Morgan",
+      "role": "field_operator",
+      "team_id": "TEAM-SE",
+      "id": "U-505"
+    },
+    {
+      "type": "User",
+      "name": "Derek Walsh",
+      "role": "field_operator",
+      "team_id": "TEAM-SE",
+      "id": "U-506"
+    },
+    {
+      "type": "User",
+      "name": "Nathan Pierce",
+      "role": "production_supervisor",
+      "team_id": "TEAM-NW",
+      "id": "U-601"
+    },
+    {
+      "type": "User",
+      "name": "Rachel Dunn",
+      "role": "field_inspector",
+      "team_id": "TEAM-NW",
+      "id": "U-602"
+    },
+    {
+      "type": "User",
+      "name": "Caleb Whitaker",
+      "role": "field_inspector",
+      "team_id": "TEAM-NW",
+      "id": "U-603"
+    },
+    {
+      "type": "User",
+      "name": "Brandon Shaw",
+      "role": "field_operator",
+      "team_id": "TEAM-NW",
+      "id": "U-604"
+    },
+    {
+      "type": "User",
+      "name": "Lauren Pruitt",
+      "role": "field_operator",
+      "team_id": "TEAM-NW",
+      "id": "U-605"
+    },
+    {
+      "type": "User",
+      "name": "Austin Kemp",
+      "role": "field_operator",
+      "team_id": "TEAM-NW",
+      "id": "U-606"
+    }
+  ],
+  "links": [
+    {
+      "relation": "managed_by",
+      "source": "SW-23",
+      "target": "TEAM-SW"
+    },
+    {
+      "relation": "managed_by",
+      "source": "SW-24",
+      "target": "TEAM-SW"
+    },
+    {
+      "relation": "managed_by",
+      "source": "NE-07",
+      "target": "TEAM-NE"
+    },
+    {
+      "relation": "managed_by",
+      "source": "NE-08",
+      "target": "TEAM-NE"
+    },
+    {
+      "relation": "managed_by",
+      "source": "SE-31",
+      "target": "TEAM-SE"
+    },
+    {
+      "relation": "managed_by",
+      "source": "NW-12",
+      "target": "TEAM-NW"
+    },
+    {
+      "relation": "managed_by",
+      "source": "SE-32",
+      "target": "TEAM-SE"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-SW",
+      "target": "U-101"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-SW",
+      "target": "U-102"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-SW",
+      "target": "U-103"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-SW",
+      "target": "U-104"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-NE",
+      "target": "U-201"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-NE",
+      "target": "U-202"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-NE",
+      "target": "U-203"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-NE",
+      "target": "U-204"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-MX",
+      "target": "U-301"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-MX",
+      "target": "U-302"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-MX",
+      "target": "U-303"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-MX",
+      "target": "U-304"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-MX",
+      "target": "U-305"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-HSE",
+      "target": "U-401"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-HSE",
+      "target": "U-402"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-SE",
+      "target": "U-501"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-SE",
+      "target": "U-502"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-SE",
+      "target": "U-503"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-SE",
+      "target": "U-504"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-SE",
+      "target": "U-505"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-SE",
+      "target": "U-506"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-NW",
+      "target": "U-601"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-NW",
+      "target": "U-602"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-NW",
+      "target": "U-603"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-NW",
+      "target": "U-604"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-NW",
+      "target": "U-605"
+    },
+    {
+      "relation": "has_member",
+      "source": "TEAM-NW",
+      "target": "U-606"
+    },
+    {
+      "relation": "leads",
+      "source": "U-101",
+      "target": "TEAM-SW"
+    },
+    {
+      "relation": "leads",
+      "source": "U-201",
+      "target": "TEAM-NE"
+    },
+    {
+      "relation": "leads",
+      "source": "U-301",
+      "target": "TEAM-MX"
+    },
+    {
+      "relation": "leads",
+      "source": "U-401",
+      "target": "TEAM-HSE"
+    },
+    {
+      "relation": "leads",
+      "source": "U-501",
+      "target": "TEAM-SE"
+    },
+    {
+      "relation": "leads",
+      "source": "U-601",
+      "target": "TEAM-NW"
+    }
+  ],
+  "indexes": {
+    "well_hierarchy": {},
+    "area_wells": {
+      "SW-23": [],
+      "SW-24": [],
+      "NE-07": [],
+      "NE-08": [],
+      "SE-31": [],
+      "NW-12": [],
+      "SE-32": []
+    },
+    "user_wells": {
+      "U-101": [],
+      "U-102": [],
+      "U-103": [],
+      "U-104": [],
+      "U-201": [],
+      "U-202": [],
+      "U-203": [],
+      "U-204": [],
+      "U-301": [],
+      "U-302": [],
+      "U-303": [],
+      "U-304": [],
+      "U-305": [],
+      "U-401": [],
+      "U-402": [],
+      "U-501": [],
+      "U-502": [],
+      "U-503": [],
+      "U-504": [],
+      "U-505": [],
+      "U-506": [],
+      "U-601": [],
+      "U-602": [],
+      "U-603": [],
+      "U-604": [],
+      "U-605": [],
+      "U-606": []
+    }
+  }
+}

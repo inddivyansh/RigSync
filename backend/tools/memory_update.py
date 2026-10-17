@@ -153,3 +153,9 @@ class MemoryUpdateTool:
 
 # Tool instance
 memory_update_tool = MemoryUpdateTool()
+
+
+def update_memory(user_id: str, asset_id: str, field: str, old_value: Any, new_value: Any, reason: str, scope: str = 'well') -> Dict[str, Any]:
+    """Record memory correction helper function for agent."""
+    tool = memory_update_tool
+    return tool.record_correction(user_id, asset_id, field, old_value, new_value, reason, scope)

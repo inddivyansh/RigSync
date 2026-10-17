@@ -10,7 +10,7 @@ from pathlib import Path
 # Paths
 BACKEND_DIR = Path(__file__).parent.parent
 DB_PATH = BACKEND_DIR / "data" / "db" / "oilwells.db"
-SAMPLE_DATA = BACKEND_DIR.parent / "sample-data"
+SAMPLE_DATA = BACKEND_DIR.parent / "test-data" / "dataset"
 
 def extract_production_threshold(manual_path):
     """Extract production threshold from well-type manual"""

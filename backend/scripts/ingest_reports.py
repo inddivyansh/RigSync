@@ -10,7 +10,7 @@ from pathlib import Path
 # Paths
 BACKEND_DIR = Path(__file__).parent.parent
 DB_PATH = BACKEND_DIR / "data" / "db" / "oilwells.db"
-SAMPLE_DATA = BACKEND_DIR.parent / "sample-data" / "assets"
+SAMPLE_DATA = BACKEND_DIR.parent / "test-data" / "dataset" / "assets"
 
 def extract_root_cause(content):
     """Extract root cause from markdown report"""

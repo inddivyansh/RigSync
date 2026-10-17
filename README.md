@@ -1,518 +1,513 @@
 # RigSync 🛢️⚡
 
-**An Agentic Asset Intelligence Copilot for Oil Field Operations**
+**Autonomous Multi-Modal Asset Intelligence Copilot for Upstream Oil & Gas Operations**
 
-[![FlytBase MLH](https://img.shields.io/badge/FlytBase-MLH%20Hackathon-blue)](https://organize.mlh.io/)
-[![Gemma 4](https://img.shields.io/badge/Model-Gemma%204-green)](https://ollama.com/library/gemma4)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![FlytBase MLH](https://img.shields.io/badge/FlytBase-MLH%20Hackathon%202026-blue.svg)](https://organize.mlh.io/)
+[![Model: Gemma 4](https://img.shields.io/badge/LLM-Gemma%204%20(Ollama)-green.svg)](https://ollama.com/library/gemma4)
+[![Backend: FastAPI](https://img.shields.io/badge/Backend-FastAPI%20%7C%20LangGraph-009688.svg)](https://fastapi.tiangolo.com/)
+[![Frontend: React + Vite](https://img.shields.io/badge/Frontend-React%2018%20%7C%20Vite%20%7C%20Tailwind-61DAFB.svg)](https://vitejs.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> Transforming scattered operational data into actionable intelligence through agentic AI
+> **RigSync** bridges the gap between massive industrial field telemetry and operational decision-making. Built for the **FlytBase Asset Intelligence Challenge**, it orchestrates an autonomous 6-node agent over structured time-series data, vector embeddings, property graphs, and scoped memory to deliver audit-grade, cited answers in seconds.
 
-## 🎯 The Problem
+---
 
-An oil company operates 200+ wells across multiple geographic areas. Each week, drones inspect wells, crews perform repairs, and regulators track compliance. This generates massive amounts of data across different systems:
+## 📑 Table of Contents
 
-- 📊 **40,000+ weekly inspections** - temperature readings, spill detections
-- 🔧 **5,700+ maintenance records** - repairs, costs, downtime
-- 📄 **1,500+ free-text reports** - root causes, safety notes
-- 📋 **Operating manuals & SOPs** - production rules, compliance deadlines
-- 💬 **Human notes** - operator corrections, planned shutdowns
+- [The Challenge](#-the-challenge)
+- [What Makes RigSync Different](#-what-makes-rigsync-different-why-we-win)
+- [System Architecture](#-system-architecture)
+- [Key Features](#-key-features)
+- [How to Run the Project](#-how-to-run-the-project-step-by-step)
+  - [Prerequisites](#1-prerequisites)
+  - [Backend Setup (Python / FastAPI)](#2-backend-setup)
+  - [Frontend Setup (React / Vite)](#3-frontend-setup)
+  - [Running with Ollama & Gemma 4](#4-running-with-ollama--gemma-4)
+  - [Troubleshooting Common Issues](#5-troubleshooting-common-run-issues)
+- [Data Ingestion & Pipeline](#-data-ingestion--pipeline)
+- [Evaluation Queries & Use Cases](#-evaluation-queries--use-cases)
+- [REST API Reference](#-rest-api-reference)
+- [Project Directory Structure](#-project-directory-structure)
+- [Future Roadmap](#-future-roadmap)
+- [Contributors & License](#-contributors--license)
 
-**Today's reality:** To answer *"Which wells were down longest this summer?"* requires hours of manual data gathering across multiple systems.
+---
 
-**Our solution:** An AI copilot that answers in seconds with evidence-backed responses and intelligent visualizations.
+## 🎯 The Challenge
+
+An upstream oil operator oversees **600+ wells** distributed across **7 geographic blocks** managed by **4 production teams**. Every week, autonomous drones inspect wellheads, maintenance crews replace components, field operators write shift logs, and regulatory agencies update compliance mandates.
+
+This generates heterogeneous, siloed, and often conflicting data streams:
+- 📊 **114,000+ weekly drone inspection logs**: Thermal differentials ($\Delta T$), flowline pressures, spill detections.
+- 🔧 **5,700+ maintenance work orders**: Component replacements, labor hours, revised costs ($USD).
+- 📄 **Thousands of free-text reports**: Root-cause analyses (RCA), failure logs, safety hazards.
+- 📋 **SOPs, MOCs & Regulatory Letters**: Standard operating procedures, management-of-change temporary bypass approvals, pump recall notices, and State Commission directives.
+- 💬 **Human shift notes & late corrections**: Field observations ("pump jack not moving"), verbal handoffs ("Nathan told me..."), and recalibration overrides.
+
+**The Operator's Dilemma:**
+> *"A well's database status says `active`, but the latest drone thermal delta is only 3°C above ambient, while an operator note from yesterday mentions a planned rod-string repair. Is the well actually producing oil right now? Are we violating our 24-hour spill reporting rule?"*
+
+Standard dashboards cannot correlate these disjointed signals, and simple vector-search RAG models hallucinate or miss temporal sequencing. **RigSync solves this through deterministic multi-agent reasoning and domain-aware physical models.**
+
+---
+
+## 🚀 What Makes RigSync Different? (Why We Win)
+
+Unlike conventional RAG chatbots that merely retrieve chunks and summarize them, RigSync was engineered from first principles for heavy industrial assets:
+
+| Dimension | Standard RAG / Naive Chatbots | RigSync Asset Copilot |
+|---|---|---|
+| **Reasoning Engine** | Single-turn vector chunk retrieval (top-$k$ similarity) | **Deterministic 6-Node LangGraph State Machine** dynamically planning queries across SQL, vector, graph, and memory |
+| **Physical Status Logic** | Blindly trusts database column `recorded_status: "active"` | **Domain-Specific Thermal Differential Engine (OPS-3)**: Derives real status from ambient delta ($\Delta T \ge 15^\circ\text{C}$ for T200, $\ge 18^\circ\text{C}$ for T350, $\ge 22^\circ\text{C}$ for T500) |
+| **Downtime Calculation** | Sums work order labor duration ($4\text{ hours}$) | **Production Cycle Downtime**: Calculates downtime based on 7-day weekly thermal inspection failure intervals ($7\text{ days per non-producing cycle}$) |
+| **Human vs. Sensor Conflicts** | Ignores contradictions or merges conflicting text | **Autonomous Conflict Detection Engine**: Actively flags when physical telemetry contradicts human operator notes (e.g. thermal delta indicates pumping, but note states pump jack stalled) |
+| **Memory & Provenance** | Unstructured chat history buffer | **3-Tier Scoped Memory**: Separates private operator preferences from global asset truth, while tracking hearsay attribution (`"Nathan told me..."`) and verification status |
+| **Regulatory Compliance** | Keyword search over PDF files | **Deterministic Rule Engine**: Encodes SOPs (OPS-1 to OPS-6), Spill Response (SR-01 to SR-04), and Commission Directives (RC-01 to RC-05) into verifiable logic |
+| **Auditability** | Vague references or hallucinations | **Strict Citation Tracking**: Every claim is linked to immutable source IDs (`[INS-0151-0201]`, `[MNT-0042]`, `[SOP-OPS:OPS-1]`, `[MOC-2026-031]`) |
+| **Privacy & Infrastructure** | Cloud API lock-in with sensitive field telemetry | **Local Air-Gapped Deployment**: Powered by **Gemma 4** running on-premise via Ollama with 64K context window |
+
+---
+
+## 🏗️ System Architecture
+
+RigSync decouples presentation, deterministic agentic planning, and multi-modal storage across four synchronized layers:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        FRONTEND CLIENT (React 18 + Vite + Tailwind)                    │
+│   • Enterprise Field Ops Dashboard         • Real-time Inline Citation Badges          │
+│   • Multi-User Persona Switcher            • Dynamic Generative UI (Cards, Tables,     │
+│     (Supervisors, Operators, HSE Officers)   Line Charts, Bar Charts, Map Views)       │
+└───────────────────────────────────────────┬────────────────────────────────────────────┘
+                                            │ HTTP REST / WebSocket (/api/chat, /api/users)
+                                            ▼
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        BACKEND API GATEWAY (FastAPI + Python 3.10+)                    │
+│   • Endpoint Routing & Session Management  • CORS Middleware & Request Validation      │
+│   • Pydantic Schemas & State Serialization • User Isolation & Security Filters         │
+└───────────────────────────────────────────┬────────────────────────────────────────────┘
+                                            │
+               LangGraph Autonomous Agent State Machine (backend/agent/agent.py)
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                        │
+│   [ 1. analyze_query ] ──► [ 2. plan_tools ] ──► [ 3. execute_tools ]                  │
+│            ▲                                              │                            │
+│            │ (Re-query if conflict)                       ▼                            │
+│            └──────────────────────────────────── [ 4. check_conflicts ]                │
+│                                                           │ (No conflict)              │
+│                                                           ▼                            │
+│   [ 6. finalize ] ◄───────────────────────────── [ 5. synthesize_response ]            │
+│          │                                                                             │
+└──────────┼─────────────────────────────────────────────────────────────────────────────┘
+           │
+           │ Orchestrates across 8 Specialized Agent Tools
+           ▼
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                  8 SPECIALIZED AGENT TOOLS                             │
+│  1. sql_query        : Safe parameterized queries over 14 relational tables            │
+│  2. vector_search    : Semantic similarity search across ChromaDB collections          │
+│  3. graph_query      : NetworkX property graph traversal for well/flowline topology     │
+│  4. downtime_calc    : Domain calculation based on weekly inspection intervals         │
+│  5. compliance_check : Automated validation against SOP, MOC, and recall rules         │
+│  6. memory_retrieval : Scoped retrieval of user preferences and verified asset memory  │
+│  7. memory_update    : Records corrections with full author/timestamp provenance       │
+│  8. conflict_detect  : Detects contradictions between sensor readings and shift notes  │
+└───────────────────────────────────────────┬────────────────────────────────────────────┘
+                                            │
+                                            ▼
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                4-TIER HYBRID STORAGE TOPOLOGY                          │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐  ┌────────────────┐  │
+│  │   SQLite DB      │  │  ChromaDB Store  │  │ NetworkX Graph   │  │  JSON Memory   │  │
+│  │ 14 Tables        │  │ 4 Collections    │  │ Topology & Flow  │  │ Audit Logs &   │  │
+│  │ 114K+ Inspections│  │ SOPs, MOCs, RCAs │  │ Wells, Pads,     │  │ Scoped User    │  │
+│  │ Repairs & Costs  │  │ Embeddings       │  │ Pipelines, Teams │  │ Preferences    │  │
+│  └──────────────────┘  └──────────────────┘  └──────────────────┘  └────────────────┘  │
+└───────────────────────────────────────────┬────────────────────────────────────────────┘
+                                            │
+                                            ▼
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                            LOCAL LLM INFERENCE (Ollama Engine)                         │
+│   • Gemma 4 (e4b / 12b / 26b)             • 64,000 Token Context Window                │
+│   • Zero Cloud API Costs                  • Air-Gapped Industrial Security             │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## ✨ Key Features
 
-### 🤖 Agentic Architecture
-- **8 specialized tools** orchestrated by LLM agent (not just RAG retrieval)
-- **Multi-step reasoning** with chain-of-thought
-- **Tool selection & chaining** based on query analysis
-- **Citation tracking** throughout execution
+### 1. 🤖 LangGraph 6-Node Agentic State Machine
+Instead of a single unguided prompt, query execution flows through 6 discrete, auditable nodes:
+1. **`analyze_query`**: Extracts entities (Well IDs, Areas, Dates, Personas) and classifies operational intent.
+2. **`plan_tools`**: Formulates a tool execution strategy (e.g. query SQL for telemetry, then vector search for MOC approval).
+3. **`execute_tools`**: Runs tools safely with parameter bounds and error trapping.
+4. **`check_conflicts`**: Cross-validates telemetry against operator shift notes and known overrides.
+5. **`synthesize_response`**: Merges numerical facts, SOP clauses, and quotes into natural language with citations.
+6. **`finalize`**: Packages markdown text with structured visual metadata (tables, cards, charts).
 
-### 🗄️ Hybrid Data Storage
-- **SQLite** - Time-series inspection/maintenance data (optimized for temporal queries)
-- **ChromaDB** - Vector embeddings for semantic search across reports & manuals
-- **NetworkX** - Knowledge graph for well relationships & equipment hierarchy
-- **JSON** - Memory & correction storage (append-only logs with provenance)
+### 2. 🧠 3-Tier Enterprise Memory System
+- **User-Scoped Preferences**: If Nathan Pierce requests: *"Sort wells by area and display costs in thousands"*, this preference is saved exclusively to Nathan's profile and never impacts other supervisors.
+- **Global Asset Truth**: When a technician confirms a pump replacement on `WELL-0333`, all users immediately see the updated asset state across future sessions.
+- **Hearsay & Provenance Auditing**: Verbal handoffs (e.g. *"Olivia: Nathan told me WELL-0577 was swapped"*) are logged with exact attribution (`author: Olivia`, `source: Nathan`) and tagged as *Unconfirmed* until validated by work order telemetry.
 
-### 🧠 Production-Grade Memory
-- **User-scoped:** Private conversation history per operator
-- **Well-scoped:** Shared knowledge visible to all users
-- **Global rules:** Team-defined overrides (e.g., "T350 wells need RCA after 2 repairs, not 3")
-- **Correction tracking:** Full provenance (who, when, why, scope)
-- **Conflict detection:** Surfaces disagreements between users/data
+### 3. 🔍 Physical Domain Logic & Rule Automation
+- **Thermal Production Status**: Evaluates wellhead temperature against ambient reading according to equipment specs (T200, T350, T500).
+- **Spill Reporting Engine**: Automatically checks spill records against rules **SR-01** (spills $\ge 5\text{ bbl}$ require report within 24 hours) and **RC-01 to RC-05** from regulatory directives.
+- **Temporary Flowline MOC Tracker**: Cross-references bypass installations against Management-of-Change expiration dates.
 
-### 📊 Intelligent Generative UI
-LLM decides visualization type based on query intent:
-- **Status Card** - Single well current state
-- **Table** - Lists of wells, repairs, violations
-- **Line Chart** - Temperature trends over time
-- **Bar Chart** - Comparing wells or areas
-- **Map** - Geographic spill locations
-- **Heatmap** - Two dimensions (e.g., area × month)
-
-### ✅ Compliance & Rule Engine
-- Parses SOPs for deadlines (SR-01: report spills ≥5 bbl within 24h)
-- Automated violation detection
-- Production status calculation from well-type manuals
-- Root cause analysis escalation tracking
+### 4. 📊 Generative UI & Multi-User Field Persona Switcher
+- **Live User Switching**: Switch seamlessly between Field Operators, Production Supervisors, and HSE Officers to test access controls, memory isolation, and persona-specific answers.
+- **Generative Visualizations**: Generates dynamic UI elements on the fly—well status indicator cards, sorting data tables, temperature time-series graphs, and geospatial spill incident maps.
 
 ---
 
-## 🏗️ Technical Architecture
+## 💻 How to Run the Project (Step-by-Step)
 
-```
-┌─────────────────────────────────────────────────────┐
-│           Frontend (Next.js 14 + React)             │
-│  • Chat interface with generative UI                │
-│  • 6 visualization components (Recharts, Leaflet)   │
-│  • User switcher for multi-user testing             │
-└────────────────────┬────────────────────────────────┘
-                     │ REST API
-┌────────────────────▼────────────────────────────────┐
-│         Backend API (FastAPI + Python)              │
-│  • LangGraph agent orchestration                    │
-│  • Tool registry & execution engine                 │
-│  • Session & memory management                      │
-│  • Citation tracking system                         │
-└────────────────────┬────────────────────────────────┘
-                     │
-        ┌────────────┼────────────┬──────────────┐
-        │            │            │              │
-┌───────▼──┐  ┌──────▼─────┐  ┌──▼─────┐  ┌────▼─────┐
-│  SQLite  │  │  ChromaDB  │  │NetworkX│  │   JSON   │
-│40K rows  │  │1500 docs   │  │Graph   │  │  Memory  │
-│Inspectns │  │Embeddings  │  │Wells   │  │Correction│
-└──────────┘  └────────────┘  └────────┘  └──────────┘
-                     │
-┌────────────────────▼────────────────────────────────┐
-│        LLM - Gemma 4 via Ollama (Local)            │
-│  • gemma4:e4b (7GB) or gemma4:12b (8GB)            │
-│  • 64K context for long SOPs                        │
-│  • Tool calling for agentic behavior                │
-│  • Zero API costs                                   │
-└─────────────────────────────────────────────────────┘
-```
+Follow these clear, bulletproof steps to run RigSync locally.
+
+### 1. Prerequisites
+
+- **Python 3.10 or 3.11** installed.
+- **Node.js 18+** and **npm** installed.
+- **Ollama** installed ([Download Ollama](https://ollama.com/download)).
+- **Git** installed.
 
 ---
 
-## 🛠️ Tech Stack
+### 2. Backend Setup
 
-**Backend:**
-- Python 3.11+
-- FastAPI - High-performance async API
-- LangGraph - Agent orchestration framework
-- Ollama - Local Gemma 4 inference
-- SQLite - Structured data storage
-- ChromaDB - Vector embeddings
-- NetworkX - Graph database
-- Pydantic - Data validation
+Open a terminal and navigate to the `RigSync/backend` folder:
 
-**Frontend:**
-- Next.js 14 (App Router)
-- React 18 + TypeScript
-- Tailwind CSS - Styling
-- Recharts - Charts & visualizations
-- React-Leaflet - Maps
-- TanStack Query - Data fetching
-
-**Data Processing:**
-- Pandas - Data manipulation
-- Sentence-Transformers - Embeddings
-- jsonlines - JSONL parsing
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-1. **Ollama** - Local LLM runtime
-   ```bash
-   # Download from https://ollama.com/download
-   # Or: brew install ollama (macOS)
-   ```
-
-2. **Python 3.11+** and **Node.js 18+**
-
-3. **Dataset** - Clone the challenge repository
-   ```bash
-   git clone https://github.com/FlytBaseAILabs/flytbase-ahc-swe-asset-intelligence-dataset.git
-   ```
-
-### Installation
-
-#### 1. Pull Gemma 4 Model
 ```bash
-# For 16GB RAM, use e4b (7GB)
-ollama pull gemma4:e4b
-
-# For 32GB+ RAM, use 12b (8GB) or 26b (16GB)
-# ollama pull gemma4:12b
-
-# Increase context length to 64K
-# Option A: Ollama app → Settings → Context Length: 64000
-# Option B: Set environment variable
-export OLLAMA_CONTEXT_LENGTH=64000  # macOS/Linux
-# OR
-$env:OLLAMA_CONTEXT_LENGTH=64000    # Windows PowerShell
-
-# Start Ollama server
-ollama serve
+cd RigSync/backend
 ```
 
-#### 2. Backend Setup
-```bash
-cd backend
+#### Step A: Create and Activate Virtual Environment
 
-# Create virtual environment
+> [!IMPORTANT]
+> **Windows Users**: On Windows systems, invoking `py -3.12` or `python` can accidentally invoke your global Python installation instead of your virtual environment. Always activate the venv first or use the direct venv Python binary path!
+
+**On Windows (PowerShell):**
+```powershell
+# Create venv if not already created
 python -m venv venv
-source venv/bin/activate  # macOS/Linux
-# OR
-.\venv\Scripts\activate   # Windows
 
-# Install dependencies
+# Activate venv
+.\venv\Scripts\Activate.ps1
+
+# Verify venv is active (should point to backend\venv\Scripts\python.exe)
+Get-Command python | Select-Object -ExpandProperty Source
+```
+
+**On Windows (Git Bash / Bash):**
+```bash
+# Create venv if not already created
+python -m venv venv
+
+# Activate venv
+source venv/Scripts/activate
+
+# Verify
+which python
+```
+
+**On macOS / Linux:**
+```bash
+# Create venv
+python3 -m venv venv
+
+# Activate venv
+source venv/bin/activate
+
+# Verify
+which python3
+```
+
+#### Step B: Install Python Dependencies
+
+With the virtual environment activated:
+
+```bash
+pip install --upgrade pip
 pip install -r requirements.txt
-
-# Copy sample data to expected location
-# Adjust path to your dataset clone
-cp -r ../../sample-data ./data/
-
-# Run data ingestion (takes ~5 mins)
-python scripts/ingest_wells.py
-python scripts/build_embeddings.py
-python scripts/build_knowledge_graph.py
-python scripts/parse_sops.py
-
-# Verify ingestion
-sqlite3 data/db/oilwells.db "SELECT COUNT(*) FROM wells;"
-# Should output: 200
-
-# Start backend server
-uvicorn main:app --reload --port 8000
-# Backend running at http://localhost:8000
 ```
 
-#### 3. Frontend Setup
-```bash
-# In new terminal
-cd frontend
+*(Key packages installed: `fastapi`, `uvicorn`, `langgraph`, `langchain`, `chromadb`, `sentence-transformers`, `networkx`, `pandas`, `pydantic`)*
 
-# Install dependencies
+#### Step C: Start the Backend Server
+
+Run the backend via `python main.py` or `uvicorn`:
+
+```bash
+# Option 1: Standard runner
+python main.py
+
+# Option 2: Direct Uvicorn command
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+> **Direct Windows Execution (Without Activating):**
+> If you prefer running without activating your shell:
+> ```powershell
+> .\venv\Scripts\python.exe main.py
+> ```
+
+The API is now live at **`http://localhost:8000`**.  
+Interactive Swagger docs: **`http://localhost:8000/docs`**.
+
+---
+
+### 3. Frontend Setup
+
+Open a **new terminal** window and navigate to `RigSync/frontend`:
+
+```bash
+cd RigSync/frontend
+```
+
+#### Step A: Install Frontend Dependencies
+
+```bash
 npm install
-
-# Start dev server
-npm run dev
-# Frontend running at http://localhost:3000
 ```
 
-#### 4. Open Browser
-Navigate to [http://localhost:3000](http://localhost:3000)
+#### Step B: Launch Vite Dev Server
 
----
-
-## 📖 Usage Examples
-
-### Example 1: Single Well Status
-```
-You: Is WELL-0001 producing oil right now?
-
-RigSync: ✗ No, WELL-0001 is not producing oil.
-
-[Status Card showing:]
-- Last inspection: INS-0001-0203 on Oct 15, 2026 by Ryan Brooks
-- Wellhead temp: 22.1°C (only 3.2°C above ambient 18.9°C)
-- T200 threshold: 15°C difference required
-- Reason: Planned shut-in for rod string replacement (Jake Morales, Oct 7)
-- Recorded status: "active" (out of date)
-
-Citations: INS-0001-0203, CTX-0001-003, T200 Manual §9.3
-```
-
-### Example 2: Multi-Well Analysis
-```
-You: Which wells in Northeast Block 8 are not producing oil?
-
-RigSync: 4 wells are currently not producing:
-
-[Table showing:]
-| Well ID    | Temp Diff | Status    | Reason                              |
-|------------|-----------|-----------|-------------------------------------|
-| WELL-0164  | 4.1°C     | active    | No recorded reason. Pump not moving |
-| WELL-0170  | 2.9°C     | down      | Repair: bearing wear (Sep 19-)      |
-| WELL-0172  | 5.7°C     | active    | Repair: flowline leak (Oct 3-)      |
-| WELL-0175  | 0.4°C     | active    | No recorded reason                  |
-
-Citations: INS-0164-0205, INS-0170-0205, INS-0172-0205, INS-0175-0205
-```
-
-### Example 3: Time-Series Visualization
-```
-You: Show WELL-0001 temperature chart for last 13 weeks
-
-RigSync: [Line chart with two lines:]
-- Blue line: Wellhead temperature (°C)
-- Green line: Ambient temperature (°C)
-- Red markers: Weeks not producing (Oct 8, Oct 15)
-
-Data shows well was producing until early October when planned shutdown began.
-
-Citations: 13 inspections from Jul 23 - Oct 15, 2026
-```
-
-### Example 4: Memory & Corrections
-```
-You: The Oct 15 reading for WELL-0164 was wrong. The thermal gun was faulty. 
-     Field crew re-measured wellhead at 41.0°C.
-
-RigSync: ✓ Correction recorded.
-
-Original: 24.0°C → Corrected: 41.0°C
-With ambient of 19.9°C, the difference is now 21.1°C (above T200 15°C threshold)
-
-WELL-0164 is now PRODUCING oil.
-
-⚠️ Conflict detected: Inspector note says "Pump jack not moving" (Tyler Hughes)
-This contradicts the corrected temperature reading. Please confirm.
-
-[Later, different user asks:]
-You: Is WELL-0164 producing oil?
-
-RigSync: Yes, based on corrected thermal reading (41.0°C vs 19.9°C ambient = 21.1°C).
-Note: Correction by Michael Turner on Oct 16 due to faulty thermal gun.
-Conflicting observation: Inspector noted pump not moving.
-```
-
----
-
-## 🧪 Testing
-
-### Run Example Queries
 ```bash
-cd backend
-python scripts/test_queries.py
-
-# Runs all 18 evaluation queries from 03-evaluation-queries.md
-# Compares outputs to expected answers
-# Generates test report
+npm run dev
 ```
 
-### Manual Testing Checklist
-See `IMPLEMENTATION_ROADMAP.md` Phase 7 for full checklist.
+The frontend will start instantly at **`http://localhost:3000`** (or `http://localhost:5173`).  
+Open your browser and navigate to **`http://localhost:3000`**.
+
+> **Note on API Proxy:** Vite is configured via `vite.config.ts` to automatically proxy all `/api` requests to `http://localhost:8000`.
 
 ---
 
-## 📊 Performance
+### 4. Running with Ollama & Gemma 4
 
-- **Query Response Time:** 3-15 seconds (depending on complexity)
-- **Accuracy:** 16/18 example queries correct (89%)
-- **Memory Usage:** ~8GB with gemma4:e4b model
-- **Dataset Size:** 200 wells, 40K inspections, 1500 reports
+RigSync is powered by Google's open-weights **Gemma 4** running locally via Ollama for zero API costs and full data privacy.
 
-**Bottlenecks & Optimizations:**
-- SQLite full table scans → Add query result caching with Redis
-- Large date range queries → Implement pagination
-- Vector search → Batch embedding generation
+1. **Pull the model** (in any terminal):
+   ```bash
+   # For 16GB RAM systems (Recommended)
+   ollama pull gemma4:e4b
 
----
+   # For 32GB+ RAM systems
+   ollama pull gemma4:12b
+   ```
 
-## 🎯 What Makes This Special
+2. **Configure 64K Context Window**:
+   Set context length so the model can digest long SOP manuals and fleet documents:
+   - **PowerShell (Windows)**:
+     ```powershell
+     $env:OLLAMA_CONTEXT_LENGTH=64000
+     ```
+   - **Linux / macOS**:
+     ```bash
+     export OLLAMA_CONTEXT_LENGTH=64000
+     ```
+   - *(Or configure context length in the Ollama desktop application settings).*
 
-### 1. True Agentic Architecture
-Not a simple RAG system. The LLM **reasons** about which tools to use, chains multiple tool calls, and synthesizes information from disparate sources.
-
-### 2. Production-Ready Memory System
-- Tracks corrections with full provenance (who, when, why, scope)
-- Isolates private conversations per user
-- Shares knowledge across team members
-- Detects conflicts between users and data
-
-### 3. Hybrid Multi-Modal Storage
-Different data types need different storage strategies. We use the right tool for each job:
-- Time-series → SQL with indexes
-- Semantic search → Vector embeddings
-- Relationships → Graph database
-- Append-only logs → JSON
-
-### 4. Domain Intelligence
-- Extracts business rules from documents (not hardcoded)
-- Handles messy real-world data (out-of-date status, conflicting notes)
-- Applies corrections at the correct scope (well vs well-type vs global)
-
-### 5. Built to Scale
-- Designed for unseen data from day 1
-- Test dataset works with zero code changes
-- Clear path to enterprise scale (PostgreSQL, Redis, Kubernetes)
+3. **Ensure Ollama Service is Running**:
+   ```bash
+   ollama serve
+   ```
 
 ---
 
-## 📁 Project Structure
+### 5. Troubleshooting Common Run Issues
 
-```
-rigsync/
-├── backend/
-│   ├── agent/
-│   │   ├── agent.py              # LangGraph orchestration
-│   │   ├── prompts.py            # System prompts
-│   │   ├── schemas.py            # Pydantic models
-│   │   └── citations.py          # Citation tracker
-│   ├── tools/
-│   │   ├── sql_query.py          # SQLite queries
-│   │   ├── vector_search.py      # ChromaDB search
-│   │   ├── graph_query.py        # NetworkX traversal
-│   │   ├── downtime_calc.py      # Business logic
-│   │   ├── compliance_check.py   # Rule violations
-│   │   ├── memory_retrieval.py   # Fetch context
-│   │   ├── memory_update.py      # Record feedback
-│   │   └── conflict_detect.py    # Find disagreements
-│   ├── memory/
-│   │   ├── memory_manager.py     # Session management
-│   │   └── correction_tracker.py # Provenance tracking
-│   ├── data/
-│   │   ├── db/                   # SQLite database
-│   │   ├── chroma/               # Vector store
-│   │   ├── memory/               # JSON memory files
-│   │   ├── knowledge_graph.json  # NetworkX export
-│   │   └── rules.json            # Extracted SOP rules
-│   ├── main.py                   # FastAPI server
-│   └── requirements.txt
-│
-├── frontend/
-│   ├── app/
-│   │   ├── page.tsx              # Main chat page
-│   │   └── api/chat/route.ts     # API proxy
-│   ├── components/
-│   │   ├── Chat/
-│   │   │   ├── ChatInterface.tsx
-│   │   │   ├── MessageList.tsx
-│   │   │   └── UserSwitcher.tsx
-│   │   └── Visualizations/
-│   │       ├── StatusCard.tsx
-│   │       ├── DataTable.tsx
-│   │       ├── LineChart.tsx
-│   │       ├── BarChart.tsx
-│   │       ├── MapView.tsx
-│   │       └── Heatmap.tsx
-│   ├── package.json
-│   └── tailwind.config.js
-│
-├── scripts/
-│   ├── ingest_wells.py           # Load well data to SQLite
-│   ├── ingest_fleet.py           # Load areas/teams/users
-│   ├── build_embeddings.py       # Generate vector embeddings
-│   ├── build_knowledge_graph.py  # Construct NetworkX graph
-│   ├── parse_sops.py             # Extract rules from SOPs
-│   └── test_queries.py           # Automated testing
-│
-├── docs/
-│   ├── ARCHITECTURE.md           # Deep dive on design
-│   ├── SYSTEM-DESIGN.md          # Submission writeup page 1
-│   ├── RESULTS.md                # Submission writeup page 2
-│   └── API.md                    # API documentation
-│
-├── results/                      # Final evaluation screenshots
-├── .env.example
-├── .gitignore
-├── LICENSE                       # MIT
-└── README.md
+#### Issue 1: `ModuleNotFoundError: No module named 'fastapi'` on Windows
+- **Cause**: Windows has a `py` launcher (`py -3.12`) which executes global Python regardless of shell activation.
+- **Solution**: Do NOT use `py -3.12 main.py`. Instead, make sure your venv is active and run `python main.py`, or call the virtual environment executable directly:
+  ```powershell
+  .\venv\Scripts\python.exe main.py
+  ```
+
+#### Issue 2: PowerShell Execution Policy error on `Activate.ps1`
+- **Cause**: PowerShell restricts script execution by default.
+- **Solution**: Run this command once in PowerShell:
+  ```powershell
+  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+  ```
+
+#### Issue 3: Port 8000 or Port 3000 Already in Use
+- **Backend Port Change**: Run `uvicorn main:app --port 8001 --reload` and update `target` in `frontend/vite.config.ts`.
+- **Frontend Port Change**: Vite will automatically offer the next available port (e.g. 3001).
+
+---
+
+## 🔄 Data Ingestion & Pipeline
+
+RigSync includes ingestion scripts inside `backend/scripts/` to rebuild or populate the multi-modal storage layer from raw dataset files:
+
+```bash
+cd RigSync/backend
+
+# Ensure venv is active, then run:
+
+# 1. Initialize SQLite schema (14 tables)
+python scripts/init_database.py
+
+# 2. Ingest 600 wells, time-series inspections, and maintenance records
+python scripts/ingest_wells.py
+
+# 3. Ingest fleet data (users, teams, areas, and roles)
+python scripts/ingest_fleet.py
+
+# 4. Ingest free-text maintenance reports
+python scripts/ingest_reports.py
+
+# 5. Build vector embeddings in ChromaDB for SOPs, MOCs, and manuals
+python scripts/build_embeddings.py
+
+# 6. Construct NetworkX knowledge graph for flowlines and equipment
+python scripts/build_knowledge_graph.py
+
+# 7. Parse SOP and MOC business rules into structured JSON
+python scripts/parse_sops.py
 ```
 
 ---
 
-## 🎥 Demo Video
+## 🧪 Evaluation Queries & Use Cases
 
-[🎬 Watch the 5-minute demo] (To be uploaded i'll update it later.)
+RigSync was evaluated against complex operational questions on the full **600-well fleet** (as of 15 January 2027):
 
-**Covers:**
-1. Problem overview (30s)
-2. Architecture walkthrough (90s)
-3. Live demo with 5 queries (150s)
-4. Under-the-hood agent reasoning (60s)
-5. Why this wins (30s)
+### 1. Production Status & Thermal Reasoning
+- **Query**: *"Is WELL-0001 producing oil right now?"*
+- **RigSync Behavior**: Pulls latest drone thermal inspection (`INS-0001-0203`), checks ambient differential ($\Delta T = 3.2^\circ\text{C}$ vs $15^\circ\text{C}$ threshold required by T200 manual), cross-references operator note from Oct 7 citing a planned shut-in, and answers: **Not producing oil (planned shutdown)** with full citations.
+
+### 2. Multi-Well Anomaly & Gas Leakage SOP
+- **Query**: *"Since 1 Nov 2026, every time an operator note reports gas at a well, did we get someone out to that well in time under our operating procedures?"*
+- **RigSync Behavior**: Scans `context.jsonl` for gas leak reports, joins with subsequent work orders (`maintenance.jsonl`), calculates elapsed response hours against SOP deadlines, and renders a structured table displaying `Well`, `Reported At`, `Response Record`, `Hours`, `Deadline`, and `Met / Missed`.
+
+### 3. Temporary Flowline Bypass Auditing (MOC)
+- **Query**: *"Across all areas, which temporary flowline bypasses are in place right now, and is each one allowed?"*
+- **RigSync Behavior**: Searches maintenance logs for bypass installations, matches each against Management-of-Change memos (`MOC-2026-031`, etc.), checks expiration dates relative to 15 Jan 2027, and flags expired or unapproved bypasses.
+
+### 4. Recalled Supplier Pumps & Cross-Session Memory
+- **Turn 1 (Nathan Pierce)**: *"WELL-0333's recalled pump was swapped out yesterday. The work order isn't in the system yet. Please count it as replaced from now on."*
+- **Turn 2 (Robert Hayes)**: *"Which recalled pumps are still in the ground right now?"*
+- **RigSync Behavior**: Nathan's verbal update is recorded in global memory with provenance. When Robert asks in a separate session, `WELL-0333` is excluded from the recall list, noting: *"Excluded based on field swap report by Nathan Pierce on 14 Jan 2027."*
+
+---
+
+## 📡 REST API Reference
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/chat` | Main query endpoint. Accepts query, `session_id`, and `user_id`. Returns agent response, citations, and visual metadata. |
+| `GET` | `/api/users` | Lists all 27 field operators, supervisors, and HSE personnel for testing. |
+| `GET` | `/api/teams` | Returns all 4 production teams and their assigned geographic blocks. |
+| `GET` | `/api/wells` | Fetches well records with filtering by area, status, and well type. |
+| `GET` | `/api/sessions` | Retrieves session history and message count for a given user. |
+| `POST` | `/api/sessions` | Creates a new isolated chat session. |
+| `POST` | `/api/corrections`| Manually records a factual asset correction with user attribution. |
+| `GET` | `/api/health` | Returns backend operational health and database connection status. |
+| `GET` | `/api/stats` | Aggregated system metrics (total wells, inspections, vector count). |
+
+---
+
+## 📁 Project Directory Structure
+
+```
+RigSync/
+├── backend/                         # FastAPI & LangGraph Backend
+│   ├── agent/                       # Agent Core
+│   │   ├── agent.py                 # 6-Node LangGraph State Machine
+│   │   ├── citations.py             # Citation Tracking System
+│   │   ├── prompts.py               # System & Tool Prompts
+│   │   └── schemas.py               # Pydantic Schemas
+│   ├── data/                        # Multi-Tier Data Storage
+│   │   ├── chroma/                  # ChromaDB Vector Store
+│   │   ├── db/                      # SQLite DB (oilwells.db, schema.sql)
+│   │   ├── graph/                   # NetworkX Knowledge Graph
+│   │   ├── memory/                  # Scoped JSON Memory & Sessions
+│   │   └── rules/                   # Extracted SOP & MOC Rules
+│   ├── memory/                      # Memory Subsystem
+│   │   ├── memory_manager.py        # Session & Preference Manager
+│   │   └── correction_tracker.py    # Fact Provenance Tracker
+│   ├── scripts/                     # Data Ingestion & Build Scripts
+│   │   ├── build_embeddings.py      # ChromaDB Embedding Builder
+│   │   ├── build_knowledge_graph.py # NetworkX Graph Builder
+│   │   ├── ingest_fleet.py          # Users, Teams, Areas Ingestion
+│   │   ├── ingest_reports.py        # Maintenance Reports Ingestion
+│   │   ├── ingest_wells.py          # Wells & Inspections Ingestion
+│   │   ├── init_database.py         # SQLite Schema Setup
+│   │   ├── parse_sops.py            # SOP & MOC Rule Parser
+│   │   └── test_queries.py          # Automated Test Harness
+│   ├── tools/                       # 8 Specialized Agent Tools
+│   │   ├── compliance_check.py      # SOP Rule Checker
+│   │   ├── conflict_detect.py       # Sensor vs Human Discrepancy Finder
+│   │   ├── downtime_calc.py         # Production Downtime Calculator
+│   │   ├── graph_query.py           # NetworkX Property Graph Query
+│   │   ├── memory_retrieval.py      # Scoped User Memory Fetcher
+│   │   ├── memory_update.py         # Asset Fact & Memory Updater
+│   │   ├── sql_query.py             # Safe Parameterized SQL Query
+│   │   └── vector_search.py         # Semantic Search Tool
+│   ├── main.py                      # FastAPI Application Entrypoint
+│   └── requirements.txt             # Python Dependencies
+│
+├── frontend/                        # React 18 + Vite Frontend
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Chat/                # Chat Interface & Message Bubbles
+│   │   │   │   ├── Chat.tsx
+│   │   │   │   ├── MessageBubble.tsx
+│   │   │   │   └── MessageList.tsx
+│   │   │   └── Layout/              # Navigation & Header
+│   │   │       ├── Header.tsx       # User Persona Switcher & Session Controls
+│   │   │       └── Sidebar.tsx      # Fleets, Areas, and Status Filters
+│   │   ├── contexts/
+│   │   │   └── SessionContext.tsx   # React Session & Persona State
+│   │   ├── types/
+│   │   │   └── index.ts             # TypeScript Interfaces
+│   │   ├── App.tsx                  # Root Application Component
+│   │   ├── main.tsx                 # Vite Entrypoint
+│   │   └── index.css                # Tailwind Styling
+│   ├── index.html                   # HTML Entrypoint
+│   ├── package.json                 # Node Dependencies & Scripts
+│   ├── tailwind.config.js           # Tailwind Configuration
+│   ├── tsconfig.json                # TypeScript Configuration
+│   └── vite.config.ts               # Vite Configuration & Backend Proxy
+│
+├── scripts/                         # Benchmark & Deep Analysis Scripts
+│   ├── analyze_q3.py                # Gas Leak Response Analysis
+│   ├── analyze_q4.py                # Flowline Bypass MOC Analysis
+│   ├── analyze_q5.py                # Regulator Spill Compliance
+│   ├── analyze_q6.py                # Discrepancy & Ground Truth Check
+│   ├── analyze_recalled_pumps.py    # Recalled Equipment Lineage
+│   └── generate_html_report.py      # Visual Report Generator
+│
+├── SUBMISSION_REPORT.md             # Complete Technical Submission Document
+├── .env.example                     # Environment Variables Template
+├── LICENSE                          # MIT License
+└── README.md                        # Documentation (You are here)
+```
 
 ---
 
 ## 🔮 Future Roadmap
 
-### Phase 2: Enterprise Scale
-- [ ] PostgreSQL + TimescaleDB for time-series data
-- [ ] Redis for query result caching
-- [ ] Kubernetes deployment with Helm charts
-- [ ] Horizontal scaling for multi-tenant
-
-### Phase 3: Enhanced Intelligence
-- [ ] Fine-tune Gemma 4 on oil & gas domain corpus
-- [ ] Predictive maintenance ML models (XGBoost on downtime patterns)
-- [ ] Anomaly detection in inspection time-series
-- [ ] Natural language to SQL without LLM (cost optimization)
-
-### Phase 4: Collaboration Features
-- [ ] Team workspaces with role-based access
-- [ ] Shared investigations (annotate queries)
-- [ ] Notification system for compliance deadlines
-- [ ] Audit logs for all corrections
-
-### Phase 5: Mobile & Offline
-- [ ] React Native mobile app for field operators
-- [ ] Offline mode with delta sync
-- [ ] Voice input for hands-free operation
-- [ ] Push notifications for critical alerts
+- [ ] **Predictive Failure Forecasting**: Integrate XGBoost time-series anomaly detection on thermal variance to flag impending pump lockups 14 days before failure.
+- [ ] **Native SCADA & MQTT Telemetry**: Ingest real-time IoT sensor streams directly from wellhead RTUs.
+- [ ] **Offline Edge Sync**: Packaged PWA for field technicians on remote rigs with intermittent satellite connectivity.
+- [ ] **Automated Work-Order Dispatch**: Direct integration with SAP PM / Maximo to auto-draft repair tickets upon compliance breach detection.
 
 ---
 
-## 🤝 Contributing
+## 🏆 Hackathon Submission Details
 
-This project was built for the FlytBase MLH Hackathon. Contributions are welcome!
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- **FlytBase & MLH** for organizing the hackathon
-- **Google** for open-sourcing Gemma 4
-- **Ollama team** for local LLM inference
-- **LangChain** for the LangGraph framework
-- **ChromaDB** for vector storage
-
----
-
-## 📞 Contact
-
-**Project by:** Divyansh Nagar
-**Email:** divyansh.indian1@gmail.com 
-**GitHub:** [@inddivyansh](https://github.com/inddivyansh)  
-**LinkedIn:** [diivyaix](https://linkedin.com/in/diivyaix)
-
----
-
-## 🏆 Built For
-
-**FlytBase Asset Intelligence Copilot Challenge**  
-Major League Hacking - Hacktoberfest 2026  
-
-**Prize Categories:**
-- ✅ Best Use of Gemma 4
-- ✅ Asset Intelligence Copilot Challenge
-
----
+- **Event**: FlytBase Asset Intelligence Copilot Challenge — Major League Hacking (MLH)
+- **Award Tracks**:
+  - 🥇 **Asset Intelligence Copilot Challenge** (Primary)
+  - 🥈 **Best Use of Gemma 4** (Local on-premise inference with 64K context)
+- **Author**: Divyansh Nagar ([@inddivyansh](https://github.com/inddivyansh))
+- **License**: [MIT](LICENSE)
 
 <div align="center">
-
-**Made with ❤️ and ☕ in 8 hours**
-
+  <sub>Built with precision for mission-critical energy operations.</sub>
 </div>

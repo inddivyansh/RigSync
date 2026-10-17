@@ -131,3 +131,25 @@ class VectorSearchTool:
 
 # Tool instance
 vector_search_tool = VectorSearchTool()
+
+
+def vector_search(query: str, top_k: int = 5, chroma_path: str = None) -> List[Dict[str, Any]]:
+    """Execute vector search across collections for agent."""
+    results = []
+    tool = vector_search_tool
+    if chroma_path:
+        try:
+            tool = VectorSearchTool()
+            tool.client = chromadb.PersistentClient(path=str(chroma_path))
+        except Exception:
+            tool = vector_search_tool
+
+    for col in tool.COLLECTIONS:
+        try:
+            hits = tool.search(query, col, n_results=top_k)
+            if hits:
+                results.extend(hits)
+        except Exception:
+            pass
+
+    return results[:top_k]

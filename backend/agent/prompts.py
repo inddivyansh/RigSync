@@ -137,3 +137,8 @@ TOOL_EXAMPLES = [
         'tools': ['memory_retrieval', 'sql_query']
     }
 ]
+
+
+def get_tool_examples():
+    """Return few-shot examples for tool selection."""
+    return TOOL_EXAMPLES
