@@ -424,7 +424,7 @@ rigsync/
 
 ## 🎥 Demo Video
 
-[🎬 Watch the 5-minute demo](https://youtu.be/YOUR_VIDEO_ID)
+[🎬 Watch the 5-minute demo] (To be uploaded i'll update it later.)
 
 **Covers:**
 1. Problem overview (30s)
@@ -493,10 +493,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-**Project by:** [Your Name]  
-**Email:** your.email@example.com  
-**GitHub:** [@yourusername](https://github.com/yourusername)  
-**LinkedIn:** [Your Profile](https://linkedin.com/in/yourprofile)
+**Project by:** Divyansh Nagar
+**Email:** divyansh.indian1@gmail.com 
+**GitHub:** [@inddivyansh](https://github.com/inddivyansh)  
+**LinkedIn:** [diivyaix](https://linkedin.com/in/diivyaix)
 
 ---
 
@@ -513,6 +513,6 @@ Major League Hacking - Hacktoberfest 2026
 
 <div align="center">
 
-**Made with ❤️ and ☕ in 18 hours**
+**Made with ❤️ and ☕ in 8 hours**
 
 </div>
