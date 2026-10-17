@@ -106,7 +106,7 @@ class SessionManager:
         """Add a message to a session."""
         session = self.get_session(session_id)
         if not session:
-            raise ValueError(f"Session {session_id} not found")
+            session = self.create_session(session_id, user_id="default")
         
         message = SessionMessage(
             role=role,

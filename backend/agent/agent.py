@@ -127,7 +127,7 @@ class RigSyncAgent:
             "intent_type": self._classify_intent(query),
             "entities": self._extract_entities(query),
             "time_context": self._extract_time_context(query),
-            "requires_calculation": any(kw in query.lower() for kw in ["downtime", "production", "calculate", "how long"]),
+            "requires_calculation": any(kw in query.lower() for kw in ["downtime", "production", "calculate", "how long", "producing", "status", "offline", "shut in", "shut-in"]),
             "requires_compliance": any(kw in query.lower() for kw in ["compliance", "violation", "overdue", "regulation", "sop"]),
             "requires_semantic_search": not any(kw in query.lower() for kw in ["list all", "count", "show me all"]),
             "correction_intent": any(kw in query.lower() for kw in ["actually", "correction", "wrong", "mistake"])
@@ -139,7 +139,7 @@ class RigSyncAgent:
         """Classify query intent."""
         query_lower = query.lower()
         
-        if any(kw in query_lower for kw in ["downtime", "production status", "non-producing"]):
+        if any(kw in query_lower for kw in ["downtime", "production status", "non-producing", "producing", "status", "shut in"]):
             return "downtime_analysis"
         elif any(kw in query_lower for kw in ["compliance", "violation", "overdue", "inspection"]):
             return "compliance_check"
@@ -253,8 +253,14 @@ class RigSyncAgent:
                 })
         
         # 6. Use SQL for structured data queries
-        if not analysis["requires_semantic_search"] or "all" in query.lower():
-            # Generate SQL based on intent
+        if analysis["entities"]["well_ids"]:
+            for well_id in analysis["entities"]["well_ids"]:
+                tool_plan.append({
+                    "tool": "sql_query",
+                    "params": {"query": f"SELECT inspection_id, inspected_at, wellhead_temp_c, ambient_temp_c, notes FROM inspections WHERE asset_id = '{well_id}' ORDER BY inspected_at DESC LIMIT 1"},
+                    "reason": f"Fetch latest inspection telemetry for {well_id}"
+                })
+        elif not analysis["requires_semantic_search"] or "all" in query.lower():
             sql_query = self._generate_sql_from_intent(analysis, query)
             if sql_query:
                 tool_plan.append({
@@ -441,30 +447,40 @@ class RigSyncAgent:
             "citations": citation_tracker.to_dict()
         }
     
-    def _format_downtime_result(self, data: Dict[str, Any], tracker: CitationTracker) -> str:
+    def _format_downtime_result(self, data: Any, tracker: CitationTracker) -> str:
         """Format downtime calculation result."""
-        well_id = data.get("well_id", "Unknown")
-        status = data.get("production_status", "unknown")
-        downtime_days = data.get("downtime_days", 0)
+        if not isinstance(data, dict):
+            return ""
+        well_id = data.get("well_id") or data.get("asset_id", "Unknown")
+        total_downtime = data.get("total_downtime_days") or data.get("downtime_days", 0)
+        non_producing = data.get("non_producing_weeks", 0)
+        status = data.get("production_status")
+        if not status:
+            status = "non-producing" if (non_producing > 0 or total_downtime > 0) else "producing"
         
         tracker.add_citation(
             SourceType.CALCULATION,
             f"Downtime calculation for {well_id}",
             {
                 "calculation_type": "downtime",
-                "formula": data.get("calculation_details", ""),
-                "inputs": f"status={status}, days={downtime_days}"
+                "formula": data.get("calculation_details", "Thermal delta vs well-type threshold"),
+                "inputs": f"status={status}, days={total_downtime}"
             }
         )
         
         if status == "non-producing":
-            return f"**{well_id}** is currently **non-producing** with **{downtime_days} days** of downtime."
+            return f"**{well_id}** is currently **not producing oil** with **{total_downtime} days** of estimated downtime."
         else:
             return f"**{well_id}** is currently **{status}**."
     
-    def _format_compliance_result(self, data: Dict[str, Any], tracker: CitationTracker) -> str:
+    def _format_compliance_result(self, data: Any, tracker: CitationTracker) -> str:
         """Format compliance check result."""
-        violations = data.get("violations", [])
+        if isinstance(data, list):
+            violations = [v for v in data if isinstance(v, dict) and v.get("violated", True) is not False]
+        elif isinstance(data, dict):
+            violations = data.get("violations", [])
+        else:
+            violations = []
         
         if not violations:
             return "✅ No compliance violations found."
@@ -472,10 +488,10 @@ class RigSyncAgent:
         lines = [f"⚠️ **{len(violations)} compliance violation(s) detected:**\n"]
         
         for v in violations[:5]:  # Show top 5
-            well_id = v.get("well_id", "Unknown")
-            rule_id = v.get("rule_id", "Unknown")
+            well_id = v.get("well_id") or v.get("asset_id", "Unknown")
+            rule_id = v.get("rule_id") or v.get("protocol_id", "Unknown")
             severity = v.get("severity", "medium")
-            message = v.get("message", "")
+            message = v.get("message") or v.get("details", "")
             
             tracker.add_citation(
                 SourceType.RULES,
@@ -494,27 +510,36 @@ class RigSyncAgent:
         
         return "\n".join(lines)
     
-    def _format_vector_result(self, data: Dict[str, Any], tracker: CitationTracker) -> str:
+    def _format_vector_result(self, data: Any, tracker: CitationTracker) -> str:
         """Format vector search result."""
-        results = data.get("results", [])
+        if isinstance(data, list):
+            results = data
+        elif isinstance(data, dict):
+            results = data.get("results", [])
+        else:
+            results = []
         
         if not results:
             return "No relevant documents found."
         
-        lines = ["**Relevant information:**\n"]
+        lines = ["**Relevant information & reports:**\n"]
         
         for r in results[:3]:  # Show top 3
-            content = r.get("content", "")[:200]
+            if not isinstance(r, dict):
+                continue
+            content = (r.get("content") or r.get("document") or "")[:200]
             metadata = r.get("metadata", {})
+            citation_str = r.get("citation") or (f"[{metadata.get('doc_type', 'doc')}]" if metadata else "[Document]")
             
             tracker.add_citation(
                 SourceType.VECTOR,
                 content,
                 metadata,
-                confidence=r.get("score")
+                confidence=r.get("score") or r.get("distance")
             )
             
-            lines.append(f"- {content}...")
+            if content:
+                lines.append(f"- {citation_str} {content}...")
         
         return "\n".join(lines)
     
@@ -524,6 +549,37 @@ class RigSyncAgent:
         
         if not rows:
             return "No matching records found."
+        
+        cols = data.get("columns", [])
+        col_map = {c: i for i, c in enumerate(cols)} if cols else {}
+        
+        if "wellhead_temp_c" in col_map and rows:
+            row = rows[0]
+            insp_id = row[col_map.get("inspection_id", 0)] if "inspection_id" in col_map else "INSP"
+            w_temp = row[col_map.get("wellhead_temp_c", 0)] if "wellhead_temp_c" in col_map else None
+            a_temp = row[col_map.get("ambient_temp_c", 0)] if "ambient_temp_c" in col_map else None
+            notes = row[col_map.get("notes", 0)] if "notes" in col_map else ""
+            date = str(row[col_map.get("inspected_at", 0)])[:10] if "inspected_at" in col_map else ""
+            
+            diff_str = f"{w_temp - a_temp:.1f} deg C" if (w_temp is not None and a_temp is not None) else "N/A"
+            
+            tracker.add_citation(
+                SourceType.DATABASE,
+                f"Inspection {insp_id} on {date}",
+                {
+                    "table": "inspections",
+                    "inspection_id": insp_id,
+                    "date": date,
+                    "wellhead_temp": w_temp,
+                    "ambient_temp": a_temp
+                }
+            )
+            
+            return (
+                f"**Latest Inspection Telemetry [{insp_id}] ({date}):**\n"
+                f"- Wellhead Temperature: **{w_temp} deg C** | Ambient Temperature: **{a_temp} deg C** (Delta-T: **{diff_str}**)\n"
+                f"- Field Observation: *\"{notes}\"*"
+            )
         
         tracker.add_citation(
             SourceType.DATABASE,
@@ -535,9 +591,8 @@ class RigSyncAgent:
             }
         )
         
-        # Simple table formatting
         if len(rows) <= 5:
-            return f"Found {len(rows)} records."
+            return f"Found {len(rows)} records in database."
         else:
             return f"Found {len(rows)} records (showing summary)."
     
@@ -616,6 +671,8 @@ class RigSyncAgent:
         }
         
         # Save user message
+        if not self.session_manager.get_session(session_id):
+            self.session_manager.create_session(session_id, user_id)
         self.session_manager.add_message(session_id, "user", query)
         
         # Execute graph
@@ -651,6 +708,8 @@ class RigSyncAgent:
         }
         
         # Save user message
+        if not self.session_manager.get_session(session_id):
+            self.session_manager.create_session(session_id, user_id)
         self.session_manager.add_message(session_id, "user", query)
         
         # Execute graph synchronously

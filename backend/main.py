@@ -303,19 +303,19 @@ async def list_wells(
     """List wells with optional filters."""
     import sqlite3
     
-    conn = sqlite3.connect("backend/data/db/oilwells.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
-    sql = "SELECT well_id, well_type, status, area, latitude, longitude FROM wells WHERE 1=1"
+    sql = "SELECT asset_id AS well_id, well_type, recorded_status AS status, area_id AS area, lat AS latitude, lon AS longitude FROM wells WHERE 1=1"
     params = []
     
     if area:
-        sql += " AND area = ?"
+        sql += " AND area_id = ?"
         params.append(area)
     
     if status:
-        sql += " AND status = ?"
+        sql += " AND recorded_status = ?"
         params.append(status)
     
     if well_type:
@@ -337,13 +337,13 @@ async def get_well(well_id: str):
     """Get detailed information about a specific well."""
     import sqlite3
     
-    conn = sqlite3.connect("backend/data/db/oilwells.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
     # Get well details
     cursor.execute("""
-        SELECT * FROM wells WHERE well_id = ?
+        SELECT * FROM wells WHERE asset_id = ?
     """, (well_id,))
     
     well = cursor.fetchone()
@@ -356,8 +356,8 @@ async def get_well(well_id: str):
     # Get recent inspections
     cursor.execute("""
         SELECT * FROM inspections 
-        WHERE well_id = ? 
-        ORDER BY inspection_date DESC 
+        WHERE asset_id = ? 
+        ORDER BY inspected_at DESC 
         LIMIT 5
     """, (well_id,))
     well_data["recent_inspections"] = [dict(row) for row in cursor.fetchall()]
@@ -365,8 +365,8 @@ async def get_well(well_id: str):
     # Get recent maintenance
     cursor.execute("""
         SELECT * FROM maintenance 
-        WHERE well_id = ? 
-        ORDER BY maintenance_date DESC 
+        WHERE asset_id = ? 
+        ORDER BY started_at DESC 
         LIMIT 5
     """, (well_id,))
     well_data["recent_maintenance"] = [dict(row) for row in cursor.fetchall()]
