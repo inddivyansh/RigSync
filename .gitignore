@@ -43,6 +43,10 @@ backend/data/knowledge_graph.json
 
 # Sample data (should be copied from dataset repo)
 backend/data/sample-data/
+sample-data/
+
+# Hackathon guide files
+hackathon-guide/
 
 # IDE
 .vscode/
