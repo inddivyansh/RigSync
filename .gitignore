@@ -1,0 +1,61 @@
+# RigSync - Git Ignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node / Frontend
+node_modules/
+.next/
+out/
+dist/
+.cache/
+.vercel
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Data (local only, not in repo)
+backend/data/db/*.db
+backend/data/db/*.db-shm
+backend/data/db/*.db-wal
+backend/data/chroma/
+backend/data/memory/*.json
+backend/data/knowledge_graph.json
+
+# Sample data (should be copied from dataset repo)
+backend/data/sample-data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Results (final evaluation only)
+results/*.png
+results/*.md
+
+# Temporary
+tmp/
+temp/
+*.tmp
