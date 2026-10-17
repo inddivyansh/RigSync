@@ -1,0 +1,90 @@
+[
+  {
+    "protocol_id": "SR-01-reportable",
+    "category": "spill_response",
+    "description": "Reportable spills (\u22655 bbl) require written notice within 24 hours of discovery",
+    "deadline_hours": 24,
+    "threshold_value": 5.0,
+    "threshold_unit": "bbl"
+  },
+  {
+    "protocol_id": "SR-01-major",
+    "category": "spill_response",
+    "description": "Major spills (\u226525 bbl) require written notice within 2 hours of discovery",
+    "deadline_hours": 2,
+    "threshold_value": 25.0,
+    "threshold_unit": "bbl"
+  },
+  {
+    "protocol_id": "SR-02",
+    "category": "spill_response",
+    "description": "Source must be stopped and spill contained within 4 hours of discovery",
+    "deadline_hours": 4,
+    "threshold_value": null,
+    "threshold_unit": null
+  },
+  {
+    "protocol_id": "SR-03-cleanup",
+    "category": "spill_response",
+    "description": "Contaminated soil must be cleaned to 1.0% TPH or less",
+    "deadline_hours": null,
+    "threshold_value": 1.0,
+    "threshold_unit": "pct_tph"
+  },
+  {
+    "protocol_id": "SR-03-verification",
+    "category": "spill_response",
+    "description": "Reportable spills must be verified within 60 days of discovery",
+    "deadline_hours": 1440,
+    "threshold_value": null,
+    "threshold_unit": null
+  },
+  {
+    "protocol_id": "SR-04",
+    "category": "spill_response",
+    "description": "All spills (including minor) must be recorded with volume and affected area",
+    "deadline_hours": null,
+    "threshold_value": null,
+    "threshold_unit": null
+  },
+  {
+    "protocol_id": "RC-01",
+    "category": "regulatory_compliance",
+    "description": "Every well must be inspected at least once every 14 days",
+    "deadline_hours": 336,
+    "threshold_value": 14,
+    "threshold_unit": "days"
+  },
+  {
+    "protocol_id": "RC-02",
+    "category": "regulatory_compliance",
+    "description": "Every flowline must pass an integrity test once per calendar year",
+    "deadline_hours": 8760,
+    "threshold_value": 1,
+    "threshold_unit": "per_year"
+  },
+  {
+    "protocol_id": "RC-03",
+    "category": "regulatory_compliance",
+    "description": "Any well down for more than 14 consecutive days must be reported to area supervisor",
+    "deadline_hours": 336,
+    "threshold_value": 14,
+    "threshold_unit": "days"
+  },
+  {
+    "protocol_id": "RC-04",
+    "category": "regulatory_compliance",
+    "description": "Agency notices of violation must be answered within 30 days",
+    "deadline_hours": 720,
+    "threshold_value": 30,
+    "threshold_unit": "days"
+  },
+  {
+    "protocol_id": "RC-05",
+    "category": "regulatory_compliance",
+    "description": "Maintain flowline program: weekly inspections, prompt leak repair, cleanup",
+    "deadline_hours": 168,
+    "threshold_value": null,
+    "threshold_unit": null
+  }
+]

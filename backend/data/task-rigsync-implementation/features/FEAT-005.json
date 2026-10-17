@@ -1,0 +1,37 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "FastAPI backend server: Create REST API endpoints for chat interface, session management, and data queries. Includes /api/chat POST endpoint for agent queries, /api/sessions for session CRUD, /api/wells for metadata lookups, /api/health for status checks. Add CORS middleware for Next.js frontend on localhost:3000. Includes comprehensive testing script with 18 evaluation queries. This feature depends on FEAT-004 (agent must exist).",
+  "status": "pending",
+  "steps": [
+    "Create backend/main.py: Initialize FastAPI app with CORS middleware allowing origin http://localhost:3000. Add startup event handler to verify data files exist (oilwells.db, chroma/, knowledge_graph.json, rules.json) and log readiness. Add shutdown event handler to close database connections. Set app title='RigSync API', version='1.0.0', description='Agentic Asset Intelligence Copilot for Oil Field Operations'.",
+    "Implement POST /api/chat endpoint in main.py: Request body: {user_id: str, session_id: str | null, query: str}. If session_id is null, create new session via SessionManager. Call RigSyncAgent.run(user_id, query) from FEAT-004. Return {session_id, response: {answer, citations, visualization_type, visualization_data, confidence}, conflicts: list[ConflictAlert] | null, processing_time_ms: int}. Add error handling for Ollama connection failures (return 503 with message 'Ollama server not available, please start with: ollama serve').",
+    "Implement GET /api/sessions/{session_id} endpoint: Return session history from SessionManager.get_history(session_id, limit=50). Format: {session_id, user_id, created_at, messages: [{role, content, timestamp}]}. Return 404 if session not found.",
+    "Implement GET /api/wells endpoint with query parameters: ?area_id, ?well_type, ?status, ?limit. Query SQLite wells table with filters. Return [{asset_id, name, well_type, area_id, team_id, location: {lat, lon}, recorded_status, last_inspection: {inspection_id, inspected_at, inspector_user_id}}]. Use sql_query tool internally to avoid duplicating SQL logic.",
+    "Implement GET /api/wells/{asset_id} endpoint: Return detailed well info: metadata from wells table + equipment list from equipment table + last 5 inspections from inspections table + last 5 maintenance events from maintenance table + active context notes from context_notes table (valid_to IS NULL). Include computed fields: is_currently_producing (from latest inspection + production threshold), days_since_last_inspection, compliance_status (from compliance_check tool for last 90 days).",
+    "Implement GET /api/health endpoint: Return {status: 'healthy', ollama_available: bool, database_available: bool, chromadb_available: bool, graph_available: bool, rules_loaded: bool, uptime_seconds: int}. Check Ollama by attempting ollama.list() call. Check database by running SELECT 1. Check ChromaDB by listing collections. Check graph by loading JSON. Check rules by loading rules.json.",
+    "Create backend/scripts/test_queries.py: Load 18 evaluation queries from docs/evaluation-queries.md (if exists) or embed them in script. Queries cover: (1) single well status, (2) multi-well listing, (3) time-series trends, (4) downtime calculations, (5) compliance violations, (6) memory corrections, (7) conflict detection, (8) geographic queries. For each query, call /api/chat, capture response, validate: answer is not empty, citations list has ≥1 entry, visualization_type is appropriate, processing_time < 30s. Log pass/fail for each query. Generate summary report: X/18 passed.",
+    "Add query examples to test_queries.py covering all tool combinations: 'Is WELL-0001 producing oil right now?' (sql_query + downtime_calc), 'Which wells in Northeast Block 8 are not producing?' (graph_query + sql_query + downtime_calc), 'Show WELL-0001 temperature chart for last 13 weeks' (sql_query + visualization), 'How many days was WELL-0042 down between April and July 2026?' (downtime_calc), 'Which wells have late spill reports?' (compliance_check), 'The Oct 15 reading for WELL-0164 was wrong, should be 41.0°C' (memory_update + conflict_detect), 'What does the T200 manual say about production temperature?' (vector_search manuals), 'Which wells had flowline leaks this year?' (sql_query maintenance table)."
+  ],
+  "acceptance_criteria": [
+    "backend/main.py created with FastAPI app, CORS for localhost:3000, 6 endpoints: POST /api/chat, GET /api/sessions/{id}, GET /api/wells, GET /api/wells/{id}, GET /api/health, GET /docs (auto-generated)",
+    "POST /api/chat returns {session_id, response: {answer, citations, visualization_type, visualization_data, confidence}, conflicts, processing_time_ms}",
+    "GET /api/health checks all 5 subsystems (Ollama, SQLite, ChromaDB, NetworkX, rules) and returns status",
+    "GET /api/wells/{asset_id} computes is_currently_producing using production threshold from well_types table",
+    "backend/scripts/test_queries.py has 18 queries covering all 8 tools and 6 visualization types",
+    "Error handling: POST /api/chat returns 503 if Ollama unavailable, 400 if query is empty, 500 with details on tool execution errors",
+    "Startup verification logs: 'SQLite: 200 wells loaded', 'ChromaDB: 4 collections', 'Graph: 2500 nodes', 'Rules: 9 protocols', 'Ollama: gemma4:e4b ready'"
+  ],
+  "verification": [
+    "Start FastAPI server: cd backend && uvicorn main:app --reload --port 8000 — expect startup logs showing all subsystems ready",
+    "Test health endpoint: curl http://localhost:8000/api/health — expect {status: 'healthy', all booleans: true}",
+    "Test chat endpoint: curl -X POST http://localhost:8000/api/chat -H 'Content-Type: application/json' -d '{\"user_id\": \"U-101\", \"session_id\": null, \"query\": \"Is WELL-0001 producing oil?\"}' — expect answer with citations and visualization_type='status_card'",
+    "Test wells endpoint: curl 'http://localhost:8000/api/wells?area_id=SW-23&limit=5' — expect 5 wells with asset_id, name, location",
+    "Test well detail: curl http://localhost:8000/api/wells/WELL-0001 — expect metadata + equipment list + last 5 inspections + is_currently_producing computed field",
+    "Run test suite: python backend/scripts/test_queries.py — expect 'PASSED: 16/18 queries' (allow 2 failures due to LLM variability)",
+    "Test Ollama error handling: Stop Ollama (kill ollama process), curl POST /api/chat — expect 503 with 'Ollama server not available' message",
+    "Verify CORS: From Next.js frontend on localhost:3000, fetch('http://localhost:8000/api/health') — expect no CORS error in browser console"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,13 @@
+{
+  "task_id": "task-rigsync-implementation",
+  "task_description": "Implement RigSync agentic RAG copilot with hybrid storage (SQLite, ChromaDB, NetworkX), 8 specialized agent tools, memory/correction tracking, and FastAPI backend",
+  "status": "pending",
+  "feature_order": [
+    "FEAT-001",
+    "FEAT-002",
+    "FEAT-003",
+    "FEAT-004",
+    "FEAT-005"
+  ],
+  "blocked_reason": null
+}

@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Data ingestion layer: Create SQLite schema with proper indexes for time-series queries, write 4 ingestion scripts to load fleet metadata (areas, teams, users, well-types, SOPs) and per-well data (metadata, inspections, maintenance, context notes, maintenance reports) from sample-data/ JSONL and JSON files into normalized SQLite tables. Extract business rules (production thresholds T200=15°C, T350=20°C, spill deadlines, RCA triggers) from well-type manuals and SOPs into data/rules/rules.json.",
+  "status": "pending",
+  "steps": [
+    "Design SQLite schema in backend/data/db/schema.sql: tables for wells (asset_id PK, name, well_type, area_id, team_id, in_charge_user_id, lat, lon, installed_on, recorded_status), equipment (equipment_id PK, asset_id FK, kind, model), inspections (inspection_id PK, asset_id FK, inspected_at, inspector_user_id, method, ambient_temp_c, wellhead_temp_c, spill_detected, spill_area_pct, spill_est_volume_bbl, notes), maintenance (maintenance_id PK, asset_id FK, started_at, completed_at, maintenance_type, equipment_kind, issue, action_taken, technician_user_id, contractor, downtime_hours, cost_labor, cost_parts, cost_total, triggered_by_inspection_id, report_file), context_notes (note_id PK, asset_id FK, created_at, author_user_id, note_type, inspection_id, text, valid_from, valid_to), areas (area_id PK, name, team_id, center_lat, center_lon), teams (team_id PK, name, lead_user_id), users (user_id PK, name, role, team_id), well_types (well_type_code PK, name, production_threshold_c, temp_alarm_c, max_pressure_psi), sop_rules (rule_id PK, protocol_id, category, description, deadline_hours, threshold_value, threshold_unit). Add indexes: idx_inspections_asset_date on inspections(asset_id, inspected_at), idx_maintenance_asset_date on maintenance(asset_id, started_at), idx_context_asset on context_notes(asset_id, valid_from, valid_to).",
+    "Write backend/scripts/ingest_fleet.py: Parse sample-data/fleet/areas.json to insert into areas, teams, users tables. Parse sample-data/fleet/well-types/T200.md and T350.md to extract production threshold (§9.3 in T200: '15 °C above ambient', §3 in T350: '20 °C above ambient'), temp alarm (T200: 85°C, T350: 95°C), max pressure (T200: 3000 psi, T350: 5000 psi) into well_types table. Use regex to extract numeric values from manual text. Log each extraction with line number for verification.",
+    "Write backend/scripts/parse_sops.py: Parse sample-data/fleet/sops/spill-response-sop.md to extract SR-01 (reportable ≥5 bbl: 24h deadline, major ≥25 bbl: 2h deadline), SR-02 (contain within 4h), SR-03 (remediate to 1.0% TPH, verify within 60 days), SR-04 (record all spills). Parse regulatory-compliance-sop.md to extract RC-01 (inspect every 14 days), RC-02 (flowline test annually), RC-03 (report downtime >14 days), RC-04 (NOV response 30 days). Write to data/rules/rules.json as array of rule objects with {protocol_id, category, description, deadline_hours, threshold_value, threshold_unit}.",
+    "Write backend/scripts/ingest_wells.py: For each directory in sample-data/assets/ (WELL-0001 to WELL-0200): parse metadata.json into wells and equipment tables; parse inspections.jsonl into inspections table (each line is one inspection record); parse maintenance.jsonl into maintenance table; parse context.jsonl into context_notes table. Handle missing fields gracefully (e.g., spill_area_pct=null when spill_detected=false). Use pandas read_json(lines=True) for JSONL parsing. Commit in batches of 50 wells for performance.",
+    "Write backend/scripts/ingest_reports.py: For each well directory, scan maintenance-reports/ subdirectory for *.md files. Parse markdown reports (pattern: MNT-XXXX-XXX.md) to extract structured data: maintenance_id from filename, root_cause from '## Root cause' section, compliance_results from '## Compliance check' table (parse protocol_id, result, detail columns into JSON), parts_cost from '## Parts and cost' table. Store in new table maintenance_reports (maintenance_id PK FK, root_cause, compliance_json, parts_json, report_path). Use regex to extract tables between markdown headers."
+  ],
+  "acceptance_criteria": [
+    "SQLite database data/db/oilwells.db created with 11 tables and 3 indexes defined in schema.sql",
+    "data/rules/rules.json contains 9 extracted rules (4 SR protocols, 5 RC protocols) with correct deadline_hours and threshold_value from SOPs",
+    "well_types table has 2 rows: T200 (threshold=15, alarm=85, pressure=3000), T350 (threshold=20, alarm=95, pressure=5000)",
+    "areas table has 4 rows (SW-23, SW-24, NE-07, NE-08), teams table has 4 rows (TEAM-SW, TEAM-NE, TEAM-MX, TEAM-HSE), users table has 15 rows",
+    "wells table has 200 rows (WELL-0001 to WELL-0200), equipment table has ~1000 rows (5 equipment per well)",
+    "inspections table has ~40000 rows, maintenance table has ~5700 rows, context_notes table has ~600 rows",
+    "maintenance_reports table has ~1500 rows with parsed root_cause and compliance_json from markdown reports"
+  ],
+  "verification": [
+    "Run: python backend/scripts/ingest_fleet.py && python backend/scripts/parse_sops.py && python backend/scripts/ingest_wells.py && python backend/scripts/ingest_reports.py",
+    "Verify row counts: sqlite3 data/db/oilwells.db 'SELECT COUNT(*) FROM wells; SELECT COUNT(*) FROM inspections; SELECT COUNT(*) FROM maintenance; SELECT COUNT(*) FROM maintenance_reports;' — expect 200, ~40000, ~5700, ~1500",
+    "Verify business rules: cat data/rules/rules.json | jq '.[] | select(.protocol_id==\"SR-01\")' — expect deadline_hours=24 for reportable, 2 for major",
+    "Verify production thresholds: sqlite3 data/db/oilwells.db 'SELECT well_type_code, production_threshold_c FROM well_types;' — expect T200=15, T350=20",
+    "Verify WELL-0001 data: sqlite3 data/db/oilwells.db 'SELECT COUNT(*) FROM inspections WHERE asset_id=\"WELL-0001\";' — expect 203 (from inspections.jsonl)",
+    "Verify maintenance report parsing: sqlite3 data/db/oilwells.db 'SELECT root_cause FROM maintenance_reports WHERE maintenance_id=\"MNT-0001-002\";' — expect 'Thread fatigue from pump jack vibration'"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
